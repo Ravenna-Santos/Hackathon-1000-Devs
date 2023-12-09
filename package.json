@@ -4,7 +4,7 @@
   "description": "teste de acesso repositório - Ravenna",
   "main": "api.js",
   "scripts": {
-    "dev": "node --watch --no-warnings api.js",
+    "dev": "node --watch --no-warnings server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
