@@ -4,7 +4,7 @@ Este é um projeto realizado para o hackaton do programa 1000Devs em parceria co
 
 ## Grupo
 
-1. Kelvem
+1. Kelvem Ferreira Da Silva
 2. Natalia Vieira
 3. Ravenna Jesus dos Santos
 4. Wesley Luan Laurentino De Sena
