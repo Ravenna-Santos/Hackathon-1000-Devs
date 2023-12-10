@@ -51,7 +51,7 @@ rotaVacina.get('/paciente/:id', async (req, res) => {
     console.log(`=> endpoint /vacina/paciente/${id} requisitado`);
 
     try {
-        const vacina = await pool.query(`SELECT v.vacina
+        const vacina = await pool.query(`SELECT v.vacina, va.data_aplicacao
         from paciente p 
         left join vacinaaplicada va on va.id_paciente = p.id_paciente 
         left join vacina v on v.id_vacina = va.id_vacina
@@ -63,7 +63,7 @@ rotaVacina.get('/paciente/:id', async (req, res) => {
             res.status(200).send(vacina.rows);
         } else {
             //caso nao retorne nenhuma linha o id nao existe
-            res.status(404).json({mensagem: 'Vacina nao encontrado.'})
+            res.status(404).json({mensagem: 'O paciente não possui vacinas aplicadas.'})
         }
     } catch (error) {    
         console.log(error);
@@ -72,6 +72,59 @@ rotaVacina.get('/paciente/:id', async (req, res) => {
 
 })
 
+/*
+Outra consulta para as vacinas
+pendentes de uma determinada pessoa
+*/
 
+rotaVacina.get('/pedente/paciente/:id', async (req, res) => {
+    //obtem o parametro
+    const id = req.params.id;
+
+    console.log(`=> endpoint /vacina/paciente/${id} requisitado`);
+
+    try {
+        const vacina = await pool.query(`select vacina.id_vacina,
+        vacina.sigla_vacina,
+        inicial,
+        final,
+        paciente.id_paciente 
+        
+ from vacina inner join (
+     select  id_vacina, 
+             (qtd_ano_inicial * 12) as inicial, 
+             (qtd_ano_final * 12) as final
+     from periodoaplicacaoano
+     union 
+     select  id_vacina, 
+             qtd_meses_inicial as inicial, 
+             qtd_meses_final as final
+     from periodoaplicacaomes
+ ) aplicacao on aplicacao.id_vacina = vacina.id_vacina
+ INNER JOIN (SELECT EXTRACT(MONTH FROM age(now(), p.data_nascimento)) + 
+             EXTRACT(YEAR FROM age(now(), p.data_nascimento)) * 12 AS idade_meses,
+             p.id_paciente
+             FROM paciente p) paciente on  paciente.idade_meses BETWEEN aplicacao.inicial AND aplicacao.final
+         where vacina.id_vacina not in (SELECT va.id_vacina 
+         from paciente p 
+         left join vacinaaplicada va on va.id_paciente = p.id_paciente 
+         left join vacina v on v.id_vacina = va.id_vacina
+         where p.id_paciente = ${id})
+         and paciente.id_paciente = ${id};`);
+
+        //verifica se retornou alguma linha do banco de dados
+        if (vacina.rowCount > 0){
+            //se retornou devolve os dados com o status 200
+            res.status(200).send(vacina.rows);
+        } else {
+            //caso nao retorne nenhuma linha o id nao existe
+            res.status(404).json({mensagem: 'O paciente está com a caderneta de vacinação em dia.'})
+        }
+    } catch (error) {    
+        console.log(error);
+        res.status(404).json({mensagem: 'Erro ao executar a consulta.'});
+    }
+
+})
 
 module.exports = rotaVacina; 
