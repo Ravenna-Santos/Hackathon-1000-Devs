@@ -166,13 +166,10 @@ rotaVacina.get('/ano-ate/:ano', async (req, res) => {
 
     try {
         const vacina = await pool.query(`select v.id_vacina, v.vacina,
-        v.sigla_vacina, pa.qtd_ano_inicial, pa.qtd_ano_final ,
-        pm.qtd_meses_inicial
+        v.sigla_vacina, pa.qtd_ano_inicial, pa.qtd_ano_final 
         from vacina v
         left join  PERIODOAPLICACAOANO PA on v.id_vacina = pa.id_vacina
-        left join  PERIODOAPLICACAOMES PM on v.id_vacina = pm.id_vacina
-        where pa.qtd_ano_inicial <= ${ano}
-       or (pm.qtd_meses_inicial / 12) <= ${ano};`);
+        where pa.qtd_ano_inicial <= ${ano};`);
 
         //verifica se retornou alguma linha do banco de dados
         if (vacina.rowCount > 0){
