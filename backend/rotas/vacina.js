@@ -16,7 +16,7 @@ rotaVacina.get('/:id', async (req, res) => {
         const vacina = await pool.query(`SELECT * 
         from VACINA as V
         left join PERIODOAPLICACAOMES as PM on PM.id_vacina = V.id_vacina
-        left join PERIODOAPLICACAOMES as PA on PA.id_vacina = V.id_vacina
+        left join PERIODOAPLICACAOANO as PA on PA.id_vacina = V.id_vacina
         left join REDE as R on V.id_rede = R.id_rede
         where V.id_vacina = ${id};`);
 
