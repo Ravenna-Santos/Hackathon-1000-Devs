@@ -5,12 +5,8 @@ const pool = require('../database/db.js');
 
 //inicializa o express
 const rotaVacina = express.Router();
-/*
-Consulta de vacina que
-retorna todas as informações
-da vacina, incluindo período
-de aplicação e rede.
-*/
+
+// Consulta de vacina que retorna todas as informações da vacina, incluindo período de aplicação e rede.
 rotaVacina.get('/:id', async (req, res) => {
     //obtem o parametro
     const id = req.params.id;
@@ -40,10 +36,7 @@ rotaVacina.get('/:id', async (req, res) => {
 
 })
 
-/*
-Uma consulta simples para listar todas
-as vacinas que uma pessoa tomou.
-*/
+/*Uma consulta simples para listar todas as vacinas que uma pessoa tomou.*/
 rotaVacina.get('/paciente/:id', async (req, res) => {
     //obtem o parametro
     const id = req.params.id;
@@ -72,11 +65,7 @@ rotaVacina.get('/paciente/:id', async (req, res) => {
 
 })
 
-/*
-Outra consulta para as vacinas
-pendentes de uma determinada pessoa
-*/
-
+/*Outra consulta para as vacinas pendentes de uma determinada pessoa*/
 rotaVacina.get('/pedente/paciente/:id', async (req, res) => {
     //obtem o parametro
     const id = req.params.id;
@@ -126,5 +115,33 @@ rotaVacina.get('/pedente/paciente/:id', async (req, res) => {
     }
 
 })
+
+// Nova rota para pesquisa por proteção
+rotaVacina.get('/doenca_protecao/:doenca', async (req, res) => {
+    const doenca_protecao = req.params.doenca;
+
+    try {
+        sqlString = `(SELECT id_vacina, vacina FROM vacina WHERE doenca_protecao ILIKE '%${doenca_protecao}%')`;
+        
+        // Utilize $1 para substituir o valor do parâmetro diretamente na consulta
+        const consulta = await pool.query(sqlString);
+    
+        // Verifica se retornou alguma linha do banco de dados
+        if (consulta.rowCount > 0) {
+            // Se retornou, devolve os dados com o status 200
+            res.status(200).send(consulta.rows);
+        } else {
+            // Caso não retorne nenhuma linha, a doença não existe
+            res.status(404).json({ mensagem: 'Doença não encontrada.' });
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensagem: 'Erro ao executar a consulta.' });
+    }
+});
+
+
+
 
 module.exports = rotaVacina; 
