@@ -141,7 +141,75 @@ rotaVacina.get('/doenca_protecao/:doenca', async (req, res) => {
     }
 });
 
+//rota para cadastro de vacina
+rotaVacina.post('/add',async (req, res) => {
+    console.log(`=> endpoint /vacina/add/ requisitado`);
 
+    //obtem os dados no corpo da requisicao HTTP
+    const vacina = req.body;
+
+    try {
+        //verifica se esta faltando algum campo obrigatorio
+        if (!vacina || !vacina.vacina || !vacina.sigla_vacina || !vacina.doenca_protecao || !vacina.dose || !vacina.id_rede) {
+            res.status(400).json({mensagem: 'Parametros incompletos.'})
+        } else {
+            //campo ok, monta o SQL
+            sqlString = `INSERT INTO vacina (id_vacina, vacina, sigla_vacina, doenca_protecao, dose, id_rede) `;
+            sqlString += ` VALUES ((SELECT (max(id_vacina) + 1) codigo FROM vacina), $1, $2, $3, $4, $5)`
+            
+            const result = await pool.query( sqlString, [vacina.vacina, vacina.sigla_vacina, vacina.doenca_protecao, vacina.dose, vacina.id_rede]);
+
+            if (result.rowCount > 0) {
+                res.status(201).json({mensagem: 'Vacina cadastrada com sucesso.'});
+            } else {
+                res.status(400).json({mensagem: 'Erro ao inserir vacina.'});
+            }
+        }
+    } catch (error) {  
+        console.log(error);
+        res.status(404).json({mensagem: 'Erro ao executar a insercao.'});
+    }
+})
+
+/*rota para para atualizar uma vacina por id*/
+rotaVacina.put('/update/:id',async (req, res) => {
+    const id = req.params.id;
+    const vacinaEditada = req.body;
+
+    console.log(`=> endpoint /paciente/update/${id} requisitado`);
+
+    //para montarmos o sql dinamicamente com os campos que vieram do formulario
+    //usamos o Object.Keys para obter o nome dos campos do formulario
+    const campos = Object.keys(vacinaEditada);
+    
+    //usamos o Object.Keys para obter os valores dos campos do formulario
+    const valores = Object.values(vacinaEditada);
+    
+    //montamos a clausula set do sql com o nome dos campos
+    const sqlSetString = campos.map((field, index) => 
+                                        `${field} = $${index + 1}`
+                                    ).join(', ');
+
+    console.log(`   Campos recebidos: ${campos}`);
+    console.log(`   Valores recebidos: ${valores}`);
+    console.log(`   Clausula SET: ${sqlSetString}`);
+    
+    try{
+        const result = await pool.query(
+            `UPDATE vacina SET ${sqlSetString} WHERE id_vacina = $${campos.length + 1}`,
+            [...valores, Number(id)]
+        );
+
+        if (result.rowCount > 0){
+            res.status(201).json({mensagem: 'Vacina atualizada com sucesso.'})
+        } else {
+            res.status(404).json({mensagem: 'Vacina nao encontrada.'});
+        }
+    } catch (error) {  
+        console.log(error);
+        res.status(404).json({mensagem: 'Erro ao executar a atualizacao.'});
+    }
+})
 
 
 module.exports = rotaVacina; 
