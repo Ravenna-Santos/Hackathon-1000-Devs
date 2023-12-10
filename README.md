@@ -1,4 +1,4 @@
-# Hackatom 1000Devs 2023
+# Hackathon 1000Devs 2023
 
 Este é um projeto realizado para o hackaton do programa 1000Devs em parceria com a Iteris. O desafio consistia em desenvolver uma API REST usando Node.js, para ser o backend de uma carteira digital de vacinação.
 
