@@ -50,7 +50,7 @@ rotaPaciente.get('/:id', async (req, res) => {
 
 })
 
-/*rota para adicionar um paciente*/
+//rota para adicionar um paciente
 rotaPaciente.post('/add',async (req, res) => {
     console.log(`=> endpoint /paciente/add/ requisitado`);
 
@@ -64,11 +64,12 @@ rotaPaciente.post('/add',async (req, res) => {
         } else {
             //campo ok, monta o SQL
             sqlString = `INSERT INTO paciente (id_paciente, nome, data_nascimento) `;
-            sqlString += ` VALUES ($3, $1, $2)`
+            sqlString += ` VALUES ((SELECT (max(id_paciente) + 1) codigo FROM paciente), $1, $2)`
             
             //desafio: pense em como descobrir o maior valor existente na coluna id_paciente ai basta somar + 1 
-            let id = 20; //deixei fixo apenas para teste --completar aq
-            const result = await pool.query( sqlString, [paciente.nome, paciente.data_nascimento, id] );
+            // let id = await pool.query(SELECT (max(id_paciente) + 1) codigo FROM paciente);
+            // console.log(id);
+            const result = await pool.query( sqlString, [paciente.nome, paciente.data_nascimento]);
 
             if (result.rowCount > 0) {
                 res.status(201).json({mensagem: 'Paciente cadastrado com sucesso.'});
